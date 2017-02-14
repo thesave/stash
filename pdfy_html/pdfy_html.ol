@@ -39,8 +39,14 @@ main
     println@Console( "Retrieved article: " + res.title )();
     
     file.filename = "tmp_article.html";
+    file.content = "<h1>" + res.title + "</h1>" + res.content + "\n";
+    writeFile@File( file )();
+
+    multiImageRegEx = "src=\"https?:\\/\\/[-a-zA-Z0-9@:%_\\+.~#?&\\/\\/=]+,(%20https?:\\/\\/[-a-zA-Z0-9@:%_\\+.~#?&\\/\\/=,]+)+\"";
+    replaceAll@StringUtils( res.content { .replacement = "", .regex = multiImageRegEx } )( res.content );
 
     findImages@JS_service( { .html = res.content } )( images );
+
     for ( image in images._ ) {
       newImgName = "image_" + y++;
       println@Console( "retrieving image: " + image )();
@@ -52,8 +58,8 @@ main
       } )();
       j=0;
       replaceAll@StringUtils( image { .replacement = "\\\\$0", .regex = "([-[\\\\]{}()*+?.,\\^$|#\\s])" } )( image );
-      replaceAll@StringUtils( res.content { .replacement = newImgName, .regex= image } )( res.content )
-    }; y=0;
+      replaceAll@StringUtils( res.content { .replacement = newImgName, .regex = image } )( res.content )
+    }; y=0;                                                             
 
     // valueToPrettyString@StringUtils( response )( t );
     // println@Console( t )();

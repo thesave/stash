@@ -21,9 +21,9 @@ String.prototype.matchAll = function(regexp) {
 function findImages( request ){
   with( imports ){
     var response = [];
-    var regExp = /src="([\W\w]+?)"/g;
+    var regExp = /src="([\w\W]+?)"/g;
     images = request.html.matchAll( regExp );
-    for( var i = 0; i < images.length; i++ ) {
+    for( var i = 0; images !== null && i < images.length; i++ ) {
       response[ i ] = images[ i ][ 1 ];
     }
     return response;

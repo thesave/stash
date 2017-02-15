@@ -26,9 +26,9 @@ embedded {
 
 main
 {
-  art[#art] = "https://...";
-  art[#art] = "https://...";
-  art[#art] = "https://...";
+  for ( arg in args ) {
+    art[#art] = arg
+  };
   req.url -> art[urlIdx];
   for (urlIdx=0, urlIdx<#art, urlIdx++) {
     parse@Readability( req )( res );

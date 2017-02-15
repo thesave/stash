@@ -1,0 +1,6 @@
+#!/bin/bash
+
+baseDir=$(pwd)
+cd ~/projects/stash/pdfy_html/
+jolie pdfy_html.ol "$@"
+mv *.pdf $baseDir

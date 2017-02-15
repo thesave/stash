@@ -65,6 +65,7 @@ main
     // println@Console( t )();
     
     file.content = "<h1>" + res.title + "</h1>" + res.content + "\n";
+    replaceAll@StringUtils( res.title { .replacement = "-", .regex = "/" } )( res.title );
     outputFile = res.title + ".pdf";
     writeFile@File( file )();
     println@Console( "Saved Temp HTML file" )();

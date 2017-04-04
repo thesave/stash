@@ -6,8 +6,15 @@ type HexArrayType: void {
   .hexArray*: string
 }
 
+type ClosestColorType: void {
+  .colors*:string
+  .target: string
+}
+
 interface SortColor {
-  RequestResponse: sortHex( HexArrayType )( HexArrayType )
+  RequestResponse: 
+  sortHex( HexArrayType )( HexArrayType ),
+  closestColor( ClosestColorType )( string ),
 }
 
 outputPort JSUtils {
@@ -29,14 +36,16 @@ main
   foreach ( lang : langs ) {
     if ( is_defined( color ) ){
       colors.hexArray[ #colors.hexArray ] = color
-      // html += "<div class='box' style='background-color:" + color + "'></div>"
     }
   };
   sortHex@JSUtils( colors )( colors );
+  clReq.colors << colors.hexArray;
+  clReq.target = chosenColor;
+  closestColor@JSUtils( clReq )( closest );
   for ( color in colors.hexArray ) {
-    println@Console( color )();
     html += "<div class='box' style='background-color:" + color + "'></div>"
   };
-  html += "</div><div class='box' style='float:right; background-color:" + chosenColor + "'></div>";
+  html += "</div><div class='box' style='float:right; background-color:" + chosenColor + "'>Jolie</div>";
+  html += "</div><div class='box' style='float:right; background-color:" + closest + "'>Closest</div>";
   writeFile@File( {.filename = "colors.html", .content = html } )()
 }

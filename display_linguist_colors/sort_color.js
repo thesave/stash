@@ -1,75 +1,107 @@
-var Color = function Color(hexVal) {
-  this.hex = hexVal;
+var window = {};
+load( "tinycolor.js" )
+load( "deltae.global.min.js" )
+
+function println( s ){
+  Java.type( "java.lang.System" ).out.println( s );
+}
+
+function sortColors( colArray ){
+  colArray.sort( function(colorA, colorB) {
+    tcA = window.tinycolor(colorA).toHsl();
+    tcB = window.tinycolor(colorB).toHsl();
+    return tcA.h - tcB.h
+  });
+}
+
+function addValue( vector, object ){
+  vector.add( Java.type( "jolie.runtime.Value" ).create( object ) );
+}
+
+function rgbTOxyz( c ){
+  var r = c.r / 255;
+  var g = c.g / 255;
+  var b = c.b / 255;
+
+  // assume sRGB
+  r = r > 0.04045 ? Math.pow(((r + 0.055) / 1.055), 2.4) : (r / 12.92);
+  g = g > 0.04045 ? Math.pow(((g + 0.055) / 1.055), 2.4) : (g / 12.92);
+  b = b > 0.04045 ? Math.pow(((b + 0.055) / 1.055), 2.4) : (b / 12.92);
+
+  var x = (r * 0.4124) + (g * 0.3576) + (b * 0.1805);
+  var y = (r * 0.2126) + (g * 0.7152) + (b * 0.0722);
+  var z = (r * 0.0193) + (g * 0.1192) + (b * 0.9505);
+
+  return [x * 100, y * 100, z * 100];
+}
+
+function rgbTOlab( c ){
+  var xyz = rgbTOxyz( c );
+  var x = xyz[0];
+  var y = xyz[1];
+  var z = xyz[2];
+  var l;
+  var a;
+  var b;
+
+  x /= 95.047;
+  y /= 100;
+  z /= 108.883;
+
+  x = x > 0.008856 ? Math.pow(x, 1 / 3) : (7.787 * x) + (16 / 116);
+  y = y > 0.008856 ? Math.pow(y, 1 / 3) : (7.787 * y) + (16 / 116);
+  z = z > 0.008856 ? Math.pow(z, 1 / 3) : (7.787 * z) + (16 / 116);
+
+  l = (116 * y) - 16;
+  a = 500 * (x - y);
+  b = 200 * (y - z);
+
+  return [l, a, b];
 };
 
-constructColor = function(colorObj){
-  var hex = colorObj.hex.substring(1);
-  /* Get the RGB values to calculate the Hue. */
-  var r = parseInt(hex.substring(0, 2), 16) / 255;
-  var g = parseInt(hex.substring(2, 4), 16) / 255;
-  var b = parseInt(hex.substring(4, 6), 16) / 255;
+function getDistance( hexC1, hexC2 ){
+  c1 = window.tinycolor( hexC1 ).toRgb();
+  _c1 = rgbTOlab( c1 );
+  labC1 = { L: _c1[0], A: _c1[1], B: _c1[2] };
+  c2 = window.tinycolor( hexC2 ).toRgb();
+  _c2 = rgbTOlab( c2 );
+  labC2 = { L: _c2[0], A: _c2[1], B: _c2[2] };
+  return window.DeltaE.getDeltaE00( labC1, labC2 );
+}
 
-  /* Getting the Max and Min values for Chroma. */
-  var max = Math.max.apply(Math, [r, g, b]);
-  var min = Math.min.apply(Math, [r, g, b]);
-
-
-  /* Variables for HSV value of hex color. */
-  var chr = max - min;
-  var hue = 0;
-  var val = max;
-  var sat = 0;
-
-
-  if (val > 0) {
-    /* Calculate Saturation only if Value isn't 0. */
-    sat = chr / val;
-    if (sat > 0) {
-      if (r == max) {
-        hue = 60 * (((g - min) - (b - min)) / chr);
-        if (hue < 0) {
-          hue += 360;
-        }
-      } else if (g == max) {
-        hue = 120 + 60 * (((b - min) - (r - min)) / chr);
-      } else if (b == max) {
-        hue = 240 + 60 * (((r - min) - (g - min)) / chr);
-      }
+function closestColor( req ){
+  var closest = req.colors[ 0 ];
+  for ( var i = 1; i < req.colors.length; i++ ) {
+    if(
+        getDistance( req.colors[ i ], req.target ) < 
+        getDistance( closest, req.target )
+      ) {
+      closest = req.colors[ i ];
     }
   }
-  colorObj.chroma = chr;
-  colorObj.hue = hue;
-  colorObj.sat = sat;
-  colorObj.val = val;
-  colorObj.luma = 0.3 * r + 0.59 * g + 0.11 * b;
-  colorObj.red = parseInt(hex.substring(0, 2), 16);
-  colorObj.green = parseInt(hex.substring(2, 4), 16);
-  colorObj.blue = parseInt(hex.substring(4, 6), 16);
-  return colorObj;
-};
+  return closest;
+}
 
-sortColorsByHue = function (colors) {
-  return colors.sort(function (a, b) {
-    return a.hue - b.hue;
-  });
-};
 
 function sortHex( hexColors ) {
   var colors = [];
   for (var i = 0; i < hexColors.hexArray.length; i++) {
-    var color = new Color( hexColors.hexArray[ i ] );
-    constructColor(color);
-    colors.push(color);
-  };
+    var tcC = hexColors.hexArray[i];
+    var tcL = ~~( window.tinycolor( tcC ).toHsl().l.toFixed( 2 ) * 10 );
+    if ( colors[ tcL ] == null ) { colors[ tcL ] = []; }
+    colors[ tcL ].push( tcC );
+  }
 
-  sortColorsByHue( colors );
-
-  
   var response = Java.type( "jolie.runtime.Value" ).create();
   var hexArray = response.getChildren( "hexArray" );
-  
-  for ( var i = 0; i < colors.length; i++ ) {
-    hexArray.add( Java.type( "jolie.runtime.Value" ).create( colors[ i ].hex ) );
+
+  for (var i = 0; i < colors.length; i++) {
+    if ( colors[i] != null ) {
+      for (var j = 0; j < colors[i].length; j++) {
+        addValue( hexArray, colors[i][j] );
+      }
+    }
   }
+
   return response;
 };

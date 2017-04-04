@@ -70,18 +70,25 @@ function getDistance( hexC1, hexC2 ){
 }
 
 function closestColor( req ){
-  var closest = req.colors[ 0 ];
+  var closest = {};
+  closest.color = req.colors[ 0 ];
+  closest.delta = getDistance( closest.color, req.target );
   for ( var i = 1; i < req.colors.length; i++ ) {
-    if(
-        getDistance( req.colors[ i ], req.target ) < 
-        getDistance( closest, req.target )
-      ) {
-      closest = req.colors[ i ];
+    var delta = getDistance( req.colors[ i ], req.target )
+    if( delta < closest.delta ) {
+      closest.color = req.colors[ i ];
+      closest.delta = delta;
     }
   }
-  return closest;
+  var response = Java.type( "jolie.runtime.Value" ).create();
+  response.setValue( closest.color );
+  addValue( response.getChildren( "delta" ), closest.delta );
+  return response;
 }
 
+function getRandomColor() {
+  return window.tinycolor.random().toHex();
+}
 
 function sortHex( hexColors ) {
   var colors = [];

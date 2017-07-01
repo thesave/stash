@@ -1,27 +1,27 @@
 #!/bin/bash
 
 function stats() {
-
-    local startedSeconds="$(sysctl -n kern.boottime | awk '{print $4}' | sed 's/.$//')"
-    local nowSeconds="$(date +%s)"
-    local upSeconds="$(expr $nowSeconds - $startedSeconds)"
+    local upSeconds="$(/usr/bin/cut -d. -f1 /proc/uptime)"
     local secs=$((upSeconds%60))
     local mins=$((upSeconds/60%60))
     local hours=$((upSeconds/3600%24))
     local days=$((upSeconds/86400))
     local UPTIME=$(printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs")
 
-    # CPU temperatures:
-    cpuTempC=$(istats cpu)
+    # calculate rough CPU and MB temperatures:
+    local cpuTempC
+    local cpuTempF
+    local mbTempC
+    local mbTempF
+    cpuTempC=$(($(sensors | grep -A 0 'Physical id 0:' | cut -c18-19)))
+    cpuTempF=$((cpuTempC*9/5+32))
 
-    # Battery status:
+    mbTempC=$(($(sensors | grep -A 0 'temp2' | cut -c16-17)))
+    mbTempF=$((gpuTempC*9/5+32))
 
-    batteryStat=$(istats battery charge)
-
-    local memTotal=$(sysctl hw.memsize | awk {'print $2'})
-    local memFreeby=$(vm_stat | grep "Pages free" | awk {'print $3'} | sed 's/.$//' | awk {'print $1*4096'})
-    local memFree=$(vm_stat | grep "Pages free" | awk {'print $3'} | sed 's/.$//' | awk {'print $1*4'})
-    local memPerc=$(awk "BEGIN { pc=100*${memFreeby}/${memTotal}; i=int(pc); print (pc-i<0.5)?i:i+1 }")
+    local memFree=$(grep MemFree /proc/meminfo | awk {'print $2'})
+    local memTotal=$(grep MemTotal /proc/meminfo | awk {'print $2'})
+    local memPerc=$(awk "BEGIN { pc=100*${memFree}/${memTotal}; i=int(pc); print (pc-i<0.5)?i:i+1 }")
 
     local df_out=()
     local line
@@ -51,15 +51,14 @@ function stats() {
 
     local out=""
     out+="${fggrn}$(date +"%A, %e %B %Y, %r")\n"
-    out+="${fggrn}$(uname -sr) | $(sw_vers -productName) $(sw_vers -productVersion)\n"
+    out+="${fggrn}$(uname -srmo)\n"
     out+="${fgylw}${df_out[0]}\n"
     out+="${fgwht}${df_out[1]}\n"
     out+="${fgred}Uptime.............: ${UPTIME}\n"
     out+="${fgred}Free Memory........: ${memFree}kB (${memPerc}%)\n"
     out+="${fgred}Running Processes..: $(ps ax | wc -l | tr -d " ")\n"
-    out+="${fgred}IP Address.........: $(ipconfig getifaddr en0)\n"
-    out+="${fgred}Temperature........: $cpuTempC\n"
-    out+="${fgred}Charge.............: $batteryStat"
+    out+="${fgred}IP Address.........: $(ip route get 8.8.8.8 2>/dev/null | head -1 | cut -d' ' -f8)\n"
+    out+="Temperature........: CPU: $cpuTempC°C/$cpuTempF°F MB: $mbTempC°C/$mbTempF°F"
     echo -e "$out"
 }
 

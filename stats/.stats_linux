@@ -17,7 +17,7 @@ function stats() {
     cpuTempF=$((cpuTempC*9/5+32))
 
     mbTempC=$(($(sensors | grep -A 0 'temp2' | cut -c16-17)))
-    mbTempF=$((gpuTempC*9/5+32))
+    mbTempF=$((mbTempC*9/5+32))
 
     local memFree=$(grep MemFree /proc/meminfo | awk {'print $2'})
     local memTotal=$(grep MemTotal /proc/meminfo | awk {'print $2'})
@@ -59,6 +59,7 @@ function stats() {
     out+="${fgred}Running Processes..: $(ps ax | wc -l | tr -d " ")\n"
     out+="${fgred}IP Address.........: $(ip route get 8.8.8.8 2>/dev/null | head -1 | cut -d' ' -f8)\n"
     out+="Temperature........: CPU: $cpuTempC°C/$cpuTempF°F MB: $mbTempC°C/$mbTempF°F"
+    out+="${rst}"
     echo -e "$out"
 }
 

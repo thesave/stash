@@ -1,4 +1,8 @@
-# A stash repository of random programs
+# A stash repository of pointer and (semi-disparate Jolie programs)
+
+## Readings and Pointers
+
+[Link to the dedicated Wiki page](https://github.com/thesave/stash/wiki/Readings)
 
 ## System scripts (bash, systemd services, etc)
 

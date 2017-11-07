@@ -8,6 +8,10 @@
 
 - [Stats](https://github.com/thesave/stash/tree/master/stats): bash files for linux and osx to show statistics of the machine.
 
+## Jolie Netbeans Settings
+
+[Netbeans_formatting](https://github.com/thesave/stash/tree/master/netbeans_formatting) contains the setting files and instructions to set the Netbeans IDE formatting to follow the programming style guidelines of the Jolie development team.
+
 ## [Jolie](http://www.jolie-lang.org) services.
 
 - [PDFy HTML article](https://github.com/thesave/stash/tree/master/pdfy_html): this service uses the [Mecury Parser API](https://mercury.postlight.com/web-parser/) 

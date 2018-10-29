@@ -10,7 +10,8 @@ outputPort Readability {
     .method = "get";
     .osc.parse.alias = "parser?url=%!{url}";
     .contentType = "application/json";
-    .addHeader.header[0] << "x-api-key" { .value = API_KEY }
+    .addHeader.header[0] << "x-api-key" { .value = API_KEY };
+    .ssl.protocol = "TLSv1.2"
     // ;.debug << true { .showContent = true }
   }
   RequestResponse: parse
@@ -77,7 +78,7 @@ main
       .args[j++] = "--listings",
       .args[j++] = "-H",
       .args[j++] = "listings-setup.tex",
-      .args[j++] = "--latex-engine=xelatex",
+      .args[j++] = "--pdf-engine=xelatex",
       .args[j++] = "--variable",
       .args[j++] = "urlcolor=magenta",
       // .args[j++] = "-s",
